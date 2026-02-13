@@ -70,7 +70,7 @@ const LoginPage = () => {
 
                         <form onSubmit={handleSubmit}>
                             {error && (
-                                <div style={{ 
+                                <div data-testid="login-error" role="alert" style={{ 
                                     color: '#dc2626', 
                                     backgroundColor: '#fef2f2', 
                                     padding: '0.75rem', 
@@ -85,31 +85,31 @@ const LoginPage = () => {
 
                             <div className="login-one-three">
                                 <input
+                                    data-testid="login-email"
                                     type="email"
                                     className='login-input'
                                     placeholder='Email Address'
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={isLoading}
-                                    required
                                 />
                             </div>
                             <div className="login-one-four">
                                 <input
+                                    data-testid="login-password"
                                     type="password"
                                     className='login-input'
                                     placeholder='Password'
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={isLoading}
-                                    required
                                 />
                             </div>
                             <div className="login-one-five">
                                 <Link href="/auth/forgot-password">Forgot Password?</Link>
                             </div>
                             <div className="login-one-six">
-                                <Button type="submit" disabled={isLoading}>
+                                <Button data-testid="login-submit" type="submit" disabled={isLoading}>
                                     {isLoading ? 'Logging in...' : 'Login'}
                                 </Button>
                             </div>

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "e2e": "cucumber-js --require-module ts-node/register --require tests/**/*.ts tests/features",
-    "test:e2e": "cucumber-js"
+    "test:e2e": "TS_NODE_PROJECT=tsconfig.cucumber.json cucumber-js",
+    "report:e2e": "node scripts/generate-html-report.js",
+    "test:e2e:report": "npm run test:e2e && npm run report:e2e"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
@@ -46,6 +48,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "cucumber-html-reporter": "^7.2.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "playwright": "^1.40.0",
