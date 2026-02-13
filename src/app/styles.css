@@ -1,0 +1,153 @@
+/* Component Styles */
+
+/* Banner */
+.banner {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.banner-close-btn {
+  transition: opacity 0.2s;
+}
+
+.banner-close-btn:hover {
+  opacity: 0.7;
+}
+
+/* Navigation */
+.nav-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.nav-link {
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #2563eb;
+}
+
+.nav-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #1e40af;
+}
+
+/* Hero Section */
+.hero-badge {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hero-title {
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #111827;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: #4b5563;
+  line-height: 1.75;
+  max-width: 32rem;
+}
+
+.hero-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.hero-button:hover {
+  background-color: #1e40af;
+}
+
+/* Stats Cards */
+.stat-card-primary {
+  background-color: #2563eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.stat-label {
+  color: white;
+  font-weight: 600;
+  text-align: right;
+}
+
+.stat-card-light {
+  background-color: #dbeafe;
+  border-top-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 280px;
+}
+
+.stat-card-light-alt {
+  background-color: #f5e6d3;
+  border-top-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  min-height: 280px;
+}
+
+.stat-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: #2563eb;
+  border-radius: 9999px;
+}
+
+/* Media Queries */
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 3.75rem;
+  }
+  
+  .stat-number {
+    font-size: 3rem;
+  }
+}
+
