@@ -4,6 +4,20 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Dashboard from '@/app/components/dashboard/dashboard';
+import { 
+  HiClipboardList, 
+  HiClock, 
+  HiCheckCircle, 
+  HiRefresh, 
+  HiExclamation, 
+  HiCalendar,
+  HiBriefcase,
+  HiTrendingUp,
+  HiUser,
+  HiStar
+} from 'react-icons/hi';
+import { PiCoin } from 'react-icons/pi';
+import { usePoints } from '@/contexts/PointsContext';
 import './page.css';
 
 interface ContractorProfile {
@@ -14,7 +28,13 @@ interface ContractorProfile {
   status: string;
   rating: number;
   totalJobs: number;
+  assignedJobs: number;
   completedJobs: number;
+  pendingJobs: number;
+  inProgressJobs: number;
+  reopenedJobs: number;
+  highPriorityJobs: number;
+  dueTodayJobs: number;
   isAvailable: boolean;
   latitude?: number;
   longitude?: number;
@@ -22,6 +42,7 @@ interface ContractorProfile {
 
 export default function ContractorDashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const { availablePoints, totalPoints, loading: pointsLoading } = usePoints();
   const router = useRouter();
   const [profile, setProfile] = useState<ContractorProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,10 +84,10 @@ export default function ContractorDashboardPage() {
   }
 
   const dashboardContent = (
-    <div className="contractor-dashboard">
+    <div className="contractor-dashboard animate-fade-in">
       <div className="dashboard-header">
-        <h1 className="text-3xl font-bold text-gray-800">Contractor Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back, {user?.name}!</p>
+        <h1 className="text-gradient">Contractor Console</h1>
+        <p className="text-secondary text-lg">Welcome back, {profile?.name}. Here's your efficiency overview.</p>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -78,30 +99,146 @@ export default function ContractorDashboardPage() {
           {/* Profile Overview */}
           <div className="profile-overview">
             <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-label">Status</div>
-                <div className={`stat-value status-${profile.status}`}>
-                  {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
+              <div className="stat-card glass-card hover-lift">
+                <div className={`stat-icon-wrapper ${profile.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                  <HiUser />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Profile Status</div>
+                  <div className={`stat-value status-${profile.status}`}>{profile.status.toUpperCase()}</div>
                 </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-label">Rating</div>
-                <div className="stat-value">⭐ {profile.rating?.toFixed(1) || '0.0'}</div>
+
+              <div className="stat-card glass-card hover-lift">
+                <div className="stat-icon-wrapper bg-indigo-100 text-indigo-600">
+                  <HiStar />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Rating</div>
+                  <div className="stat-value">{profile.rating?.toFixed(1)} / 5.0</div>
+                </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-label">Completed Jobs</div>
-                <div className="stat-value text-green-600">{profile.completedJobs}</div>
+
+              <div className="stat-card glass-card hover-lift">
+                <div className="stat-icon-wrapper bg-sky-100 text-sky-600">
+                  <HiBriefcase />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Lifetime Jobs</div>
+                  <div className="stat-value">{profile.totalJobs}</div>
+                </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-label">Total Jobs</div>
-                <div className="stat-value text-blue-600">{profile.totalJobs}</div>
+
+              <div className="stat-card glass-card hover-lift">
+                <div className="stat-icon-wrapper bg-emerald-100 text-emerald-600">
+                  <HiCheckCircle />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Success Rate</div>
+                  <div className="stat-value">
+                    {profile.totalJobs > 0 ? ((profile.completedJobs / profile.totalJobs) * 100).toFixed(0) : 0}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="stats-grid">
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?status=assigned')}
+              >
+                <div className="stat-icon-wrapper bg-blue-100 text-blue-600">
+                  <HiClipboardList />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Assigned</div>
+                  <div className="stat-value">{profile.assignedJobs}</div>
+                </div>
+              </div>
+
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?status=pending')}
+              >
+                <div className="stat-icon-wrapper bg-amber-100 text-amber-600">
+                  <HiClock />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Available</div>
+                  <div className="stat-value">{profile.pendingJobs}</div>
+                </div>
+              </div>
+
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?status=in-progress')}
+              >
+                <div className="stat-icon-wrapper bg-indigo-100 text-indigo-600">
+                  <HiRefresh />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">In Progress</div>
+                  <div className="stat-value">{profile.inProgressJobs}</div>
+                </div>
+              </div>
+
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?status=completed')}
+              >
+                <div className="stat-icon-wrapper bg-emerald-100 text-emerald-600">
+                  <HiCheckCircle />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Completed</div>
+                  <div className="stat-value">{profile.completedJobs}</div>
+                </div>
+              </div>
+
+              <div className="stat-card glass-card hover-lift points-highlight">
+                <div className="stat-icon-wrapper bg-emerald-500 text-white">
+                  <PiCoin />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Civic Points</div>
+                  <div className="stat-value text-emerald-600">{pointsLoading ? '...' : availablePoints}</div>
+                  <div className="text-xs text-emerald-700 font-medium opacity-80">Accumulated: {totalPoints} PTS</div>
+                </div>
+              </div>
+
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?priority=high')}
+              >
+                <div className="stat-icon-wrapper bg-rose-100 text-rose-600">
+                  <HiExclamation />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">High Priority</div>
+                  <div className="stat-value">{profile.highPriorityJobs}</div>
+                </div>
+              </div>
+
+              <div 
+                className="stat-card glass-card hover-lift clickable" 
+                onClick={() => router.push('/contractor/jobs?due=today')}
+              >
+                <div className="stat-icon-wrapper bg-teal-100 text-teal-600">
+                  <HiCalendar />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Due Today</div>
+                  <div className="stat-value">{profile.dueTodayJobs}</div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Profile Details */}
-          <div className="profile-details">
-            <h2 className="section-title">Profile Information</h2>
+          <div className="profile-details glass-card">
+            <h2 className="section-title">
+              <HiUser className="text-indigo-600" /> Professional Profile
+            </h2>
             <div className="details-grid">
               <div className="detail-item">
                 <span className="detail-label">Name:</span>

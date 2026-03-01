@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Contractor profile not found' }, { status: 404 });
     }
 
-    const { jobId } = await req.json();
+    const { jobId, resolutionImageUrl, contractorRemarks, workDescription, cost } = await req.json();
 
     if (!jobId) {
       return NextResponse.json({ error: 'Job ID is required' }, { status: 400 });
@@ -80,7 +80,11 @@ export async function POST(req: NextRequest) {
       const updatedJob = await tx.report.update({
         where: { id: jobId },
         data: {
-          status: 'resolved'
+          status: 'resolved',
+          resolutionImageUrl,
+          contractorRemarks,
+          workDescription,
+          cost: cost ? parseFloat(cost) : undefined
         }
       });
 
@@ -111,6 +115,16 @@ export async function POST(req: NextRequest) {
           totalPoints: { increment: contractorRewardPoints },
           availablePoints: { increment: contractorRewardPoints },
         },
+      });
+
+      // Create notification
+      await tx.notification.create({
+        data: {
+          userId: user.id,
+          title: 'Job Resolved!',
+          message: `Great job! Issue #${jobId} has been resolved. You earned ${contractorRewardPoints} points.`,
+          type: 'success'
+        }
       });
 
       return {

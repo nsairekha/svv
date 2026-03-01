@@ -9,6 +9,8 @@ import NavigationTabs from '@/app/components/dashboard/navigation-tabs/navigatio
 import StatsBar from '@/app/components/dashboard/stats-bar/stats-bar';
 import UploadTab from '@/app/components/dashboard/upload-tab/upload-tab';
 import GalleryTab from '@/app/components/dashboard/gallery-tab/gallery-tab';
+import AdminContractorsWidget from './admin-widgets/admin-contractors-widget'
+import AdminContractorsManager from './admin-widgets/admin-contractors-manager'
 
 interface Report {
   id: number;
@@ -142,7 +144,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <Dashboard>
+    <Dashboard role={user.role}>
       <div className="OrganizationHomeComponent">
         <div className="OrganizationHomeComponent-in">
           <NavigationTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -150,6 +152,15 @@ export default function DashboardPage() {
           <StatsBar reports={reports} />
 
           <div className="flex-1">
+            {user && (user.role === 'admin' || user.role === 'super_admin') && (
+              <div style={{marginBottom: '1rem'}}>
+                <AdminContractorsWidget />
+                <div style={{marginTop:12}}>
+                  <AdminContractorsManager />
+                </div>
+              </div>
+            )}
+
             {activeTab === 'upload' && (
               <UploadTab onUpload={handleUpload} />
             )}

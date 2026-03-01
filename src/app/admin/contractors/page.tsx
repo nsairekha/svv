@@ -396,6 +396,7 @@ export default function ContractorsPage() {
   useEffect(() => {
     if (user && (user.role === 'super_admin' || user.role === 'admin')) {
       fetchContractors();
+      fetchReports();
     }
   }, [user]);
 
@@ -445,6 +446,52 @@ export default function ContractorsPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Reports (issues) for admin to review and assign
+  const [reports, setReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [assigning, setAssigning] = useState<{ [key: string]: boolean }>({});
+
+  const fetchReports = async () => {
+    try {
+      setLoadingReports(true);
+      const res = await fetch('/api/admin/reports');
+      const json = await res.json();
+      if (res.ok) {
+        setReports(json.reports || []);
+      } else {
+        console.error('Failed to fetch reports', json);
+      }
+    } catch (err) {
+      console.error('Fetch reports error', err);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  const handleAssignReport = async (reportId: number, contractorId: number) => {
+    setAssigning((s) => ({ ...s, [reportId]: true }));
+    try {
+      const res = await fetch('/api/admin/reports/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId, contractorId }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        // refresh lists
+        fetchReports();
+        fetchContractors();
+      } else {
+        setError(json.error || 'Failed to assign contractor');
+      }
+    } catch (err) {
+      console.error('Assign error', err);
+      setError('Failed to assign contractor');
+    } finally {
+      setAssigning((s) => ({ ...s, [reportId]: false }));
     }
   };
 
@@ -775,6 +822,62 @@ export default function ContractorsPage() {
               ))}
             </tbody>
           </table>
+        )}
+      </div>
+
+      {/* Recent Issues (Reports) - Admin can assign contractors */}
+      <div className="reports-section">
+        <h2 className="section-title">Recent Issues</h2>
+        <p className="section-subtitle">Review reports submitted by users and assign contractors</p>
+
+        {loadingReports ? (
+          <div className="loading-state">Loading reports...</div>
+        ) : reports.length === 0 ? (
+          <div className="empty-state">No recent issues</div>
+        ) : (
+          <div className="reports-list">
+            {reports.map((r) => (
+              <div key={r.id} className="report-card">
+                <div className="report-media">
+                  <img src={r.imageUrl} alt={`report-${r.id}`} className="report-thumb" />
+                </div>
+                <div className="report-body">
+                  <div className="report-meta">
+                    <div><strong>Type:</strong> {r.issueType}</div>
+                    <div><strong>Severity:</strong> {r.severity}</div>
+                    <div><strong>Status:</strong> {r.status}</div>
+                    <div><strong>Assigned:</strong> {r.assignedTo || '—'}</div>
+                  </div>
+                  <div className="report-actions">
+                    <select
+                      defaultValue=""
+                      className="assign-select"
+                      aria-label={`select-contractor-${r.id}`}>
+                      <option value="">Select contractor...</option>
+                      {contractors.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name} — {c.city || c.company || c.email}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={async (e) => {
+                        const sel = (e.currentTarget.previousElementSibling as HTMLSelectElement);
+                        const contractorId = sel?.value;
+                        if (!contractorId) {
+                          setError('Please select a contractor to assign');
+                          return;
+                        }
+                        await handleAssignReport(r.id, parseInt(contractorId));
+                      }}
+                      className="assign-btn"
+                      disabled={!!assigning[r.id]}
+                    >
+                      {assigning[r.id] ? 'Assigning...' : 'Assign'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

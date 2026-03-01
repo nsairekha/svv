@@ -16,7 +16,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return distance;
 }
 
-// GET /api/contractor/jobs - Get jobs within 50km of contractor's location
+// GET /api/contractor/jobs - Get jobs with advanced filtering
 export async function GET(req: NextRequest) {
   try {
     // Authenticate
@@ -48,35 +48,78 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Contractor profile not found' }, { status: 404 });
     }
 
-    if (!contractor.latitude || !contractor.longitude) {
-      return NextResponse.json({ 
-        error: 'Location not set. Please update your location in profile.',
-        jobs: [],
-        contractorLocation: null
-      });
-    }
-
-    // Get filter parameter
+    // Get query parameters
     const { searchParams } = new URL(req.url);
-    const statusFilter = searchParams.get('status');
+    const statusFilter = searchParams.get('status') || 'all';
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || 'all';
+    const priority = searchParams.get('priority') || 'all';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
 
-    // Build where clause based on filter
+    // Build where clause
     let whereClause: any = {};
     
-    if (statusFilter && statusFilter !== 'all') {
-      if (statusFilter === 'pending') {
-        whereClause.status = 'pending';
-      } else if (statusFilter === 'in_progress') {
-        whereClause.status = 'in_progress';
-        whereClause.assignedTo = user.email;
-      } else if (statusFilter === 'resolved') {
-        whereClause.status = 'resolved';
-        whereClause.assignedTo = user.email;
+    // Status Filter & Scoping
+    if (statusFilter === 'all') {
+      // Security/Logic: Only show pending (available to all) OR jobs specifically assigned to this contractor
+      whereClause.OR = [
+        { status: 'pending', assignedTo: null },
+        { assignedTo: user.email }
+      ];
+    } else if (statusFilter === 'pending') {
+      whereClause.status = 'pending';
+      whereClause.assignedTo = null;
+    } else if (['assigned', 'in-progress', 'resolved', 'reopened'].includes(statusFilter)) {
+      whereClause.status = statusFilter.replace('-', '_');
+      whereClause.assignedTo = user.email;
+    } else {
+      // Default to user's own scope if unknown filter
+      whereClause.assignedTo = user.email;
+    }
+
+    // Search (ID, Type, Description) - Must respect the scope defined above
+    if (search) {
+      const searchTerms = [
+        { id: isNaN(parseInt(search)) ? undefined : parseInt(search) },
+        { issueType: { contains: search } },
+        { description: { contains: search } }
+      ].filter(condition => condition !== undefined);
+
+      if (whereClause.OR) {
+        // If we already have a scope-based OR (like for 'all'), we wrap everything
+        whereClause = {
+          AND: [
+            { OR: whereClause.OR },
+            { OR: searchTerms }
+          ]
+        };
+      } else {
+        // Apply search terms within the specific status scope
+        whereClause.AND = [
+          { OR: searchTerms }
+        ];
       }
     }
 
-    // Get all reports (we'll filter by distance in JavaScript)
-    const allReports = await prisma.report.findMany({
+    // Category (issueType)
+    if (category !== 'all') {
+      whereClause.issueType = category;
+    }
+
+    // Priority (severity mapping)
+    if (priority !== 'all') {
+      if (priority === 'high') {
+        whereClause.severity = { gte: 0.7 };
+      } else if (priority === 'medium') {
+        whereClause.severity = { gte: 0.4, lt: 0.7 };
+      } else if (priority === 'low') {
+        whereClause.severity = { lt: 0.4 };
+      }
+    }
+
+    // Fetch reports
+    const reports = await prisma.report.findMany({
       where: whereClause,
       include: {
         user: {
@@ -86,45 +129,49 @@ export async function GET(req: NextRequest) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { [sortBy]: sortOrder }
     });
 
-    // Filter reports within 50km and calculate distances
-    const jobsWithDistance = allReports
-      .map(report => {
-        const distance = calculateDistance(
-          contractor.latitude!,
-          contractor.longitude!,
+    // Calculate distances and transform
+    const jobs = reports.map(report => {
+      let distance = 0;
+      if (contractor.latitude && contractor.longitude) {
+        distance = calculateDistance(
+          contractor.latitude,
+          contractor.longitude,
           report.lat,
           report.lng
         );
+      }
 
-        return {
-          id: report.id,
-          lat: report.lat,
-          lng: report.lng,
-          imageUrl: report.imageUrl,
-          issueType: report.issueType,
-          severity: report.severity,
-          description: report.description,
-          status: report.status,
-          assignedTo: report.assignedTo,
-          createdAt: report.createdAt.toISOString(),
-          distance: distance,
-          userId: report.userId,
-          userName: report.user.name
-        };
-      })
-      .filter(job => job.distance <= 50) // Only jobs within 50km
-      .sort((a, b) => a.distance - b.distance); // Sort by distance
+      return {
+        id: report.id,
+        lat: report.lat,
+        lng: report.lng,
+        imageUrl: report.imageUrl,
+        issueType: report.issueType,
+        severity: report.severity,
+        description: report.description,
+        status: report.status,
+        assignedTo: report.assignedTo,
+        createdAt: report.createdAt.toISOString(),
+        distance: distance,
+        userId: report.userId,
+        userName: report.user.name,
+        userEmail: report.user.email
+      };
+    });
+
+    // Return all jobs (distance filter removed as per user request to see all reported issues)
+    const filteredJobs = jobs;
 
     return NextResponse.json({
-      jobs: jobsWithDistance,
-      contractorLocation: {
+      jobs: filteredJobs,
+      contractorLocation: contractor.latitude ? {
         latitude: contractor.latitude,
         longitude: contractor.longitude
-      },
-      message: `Found ${jobsWithDistance.length} jobs within 50km`
+      } : null,
+      totalCount: filteredJobs.length
     });
 
   } catch (error: any) {

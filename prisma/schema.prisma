@@ -23,6 +23,7 @@ model User {
   reports         Report[]
   coupons         Coupon[]
   contractor      Contractor?  // One-to-one relation with Contractor
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -42,6 +43,11 @@ model Report {
   userId        Int
   pointsAwarded Int      @default(0)
   avgTimeToFix  Int      @default(0)
+  resolutionImageUrl String?
+  contractorRemarks  String? @db.Text
+  workDescription    String? @db.Text
+  cost              Float?
+  deadline          DateTime?
   user          User     @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "reports_userId_fkey")
@@ -103,4 +109,18 @@ model Contractor {
 
   @@index([userId], map: "contractors_userId_fkey")
   @@map("contractors")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String   @db.Text
+  type      String   @default("info") // info, success, warning, error
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "notifications_userId_fkey")
+  @@map("notifications")
 }

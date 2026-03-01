@@ -3,14 +3,14 @@ Feature: Login
 
   Scenario: Successful login with valid email and password
     Given I am on the login page
-    When I enter email "admin@gmail.com" and password "admin@1234"
+    When I enter email "admin1@gmail.com" and password "admin1@1234"
     And I submit the login form
     Then I should be redirected to the dashboard
     And I should see that I am logged in
 
   Scenario: Failed login with wrong password
     Given I am on the login page
-    When I enter email "admin@gmail.com" and password "WrongPassword"
+    When I enter email "admin1@gmail.com" and password "WrongPassword"
     And I submit the login form
     Then I should remain on the login page
     And I should see an error message about invalid credentials

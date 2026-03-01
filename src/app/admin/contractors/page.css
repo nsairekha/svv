@@ -610,3 +610,75 @@
     padding: 1.5rem;
   }
 }
+
+/* Reports / Issues section */
+.reports-section {
+  margin-top: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+.reports-section .section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.reports-section .section-subtitle {
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+.reports-list {
+  display: grid;
+  gap: 1rem;
+}
+.report-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+.report-thumb {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.report-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.report-meta {
+  display: flex;
+  gap: 1.25rem;
+  color: #475569;
+  font-size: 0.9rem;
+}
+.report-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.assign-select {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.assign-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+.assign-btn[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+

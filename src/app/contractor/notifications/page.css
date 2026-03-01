@@ -1,0 +1,117 @@
+.notifications-page {
+  padding: 3rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+}
+
+.btn-clear-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-clear-all:hover {
+  background: #ef4444;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.75rem;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-item.unread {
+  border-left: 4px solid #6366f1;
+}
+
+.notification-item.read {
+  opacity: 0.7;
+}
+
+.notif-title {
+  font-weight: 700;
+  color: #09090b;
+  font-size: 1.125rem;
+}
+
+.notif-message {
+  color: #71717a;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.notif-time {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.02);
+  color: #a1a1aa;
+}
+
+.action-btn:hover {
+  background: #09090b;
+  color: white;
+  border-color: #09090b;
+}
+
+.action-btn.delete:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 6rem 2rem;
+  border-radius: 24px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin: 0 auto 1.5rem;
+  color: #cbd5e1;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}

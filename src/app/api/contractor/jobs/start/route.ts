@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
 
-// POST /api/contractor/jobs/accept - Accept a job
+// POST /api/contractor/jobs/start - Start work on an assigned job
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Job ID is required' }, { status: 400 });
     }
 
-    // Check if job exists and is available
+    // Check if job exists and is assigned to this contractor
     const job = await prisma.report.findUnique({
       where: { id: jobId }
     });
@@ -40,30 +40,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    if (job.status !== 'pending') {
-      return NextResponse.json({ error: 'Job is not available' }, { status: 400 });
+    if (job.status !== 'assigned') {
+      return NextResponse.json({ error: 'Job is not in assigned state' }, { status: 400 });
     }
 
-    if (job.assignedTo) {
-      return NextResponse.json({ error: 'Job is already assigned' }, { status: 400 });
+    if (job.assignedTo !== user.email) {
+      return NextResponse.json({ error: 'Job is not assigned to you' }, { status: 403 });
     }
 
-    // Accept the job and create notification
+    // Start working on the job and create notification
     const result = await prisma.$transaction(async (tx) => {
       const updated = await tx.report.update({
         where: { id: jobId },
         data: {
-          status: 'assigned',
-          assignedTo: user.email
+          status: 'in_progress'
         }
       });
 
       await tx.notification.create({
         data: {
           userId: user.id,
-          title: 'Job Accepted',
-          message: `You have successfully accepted job #${jobId} (${job.issueType}).`,
-          type: 'info'
+          title: 'Work Started',
+          message: `You have started work on job #${jobId} (${job.issueType}).`,
+          type: 'success'
         }
       });
 
@@ -72,11 +71,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       job: result,
-      message: 'Job accepted successfully'
+      message: 'Work started successfully'
     });
 
   } catch (error: any) {
-    console.error('Accept job error:', error);
+    console.error('Start work error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
